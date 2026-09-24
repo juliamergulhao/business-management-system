@@ -2,8 +2,8 @@
 
 Sistema web para **gestão empresarial e análise de processos de negócio**, integrando modelagem de processos, estoque, vendas e controle financeiro em uma única aplicação.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Acessar%20Aplicação-00C7B7?style=for-the-badge)](https://juliamergulhao.github.io/sistema-gestao-empresarial/)
-[![GitHub](https://img.shields.io/badge/Source%20Code-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/juliamergulhao/sistema-gestao-empresarial)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Acessar%20Aplicação-00C7B7?style=for-the-badge)](https://juliamergulhao.github.io/business-management-system/)
+[![GitHub](https://img.shields.io/badge/Source%20Code-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/juliamergulhao/business-management-system)
 
 Projeto desenvolvido para demonstrar, de forma prática, a aplicação de conceitos de **Arquitetura Empresarial, processos de negócio e integração entre áreas operacionais e financeiras**.
 
@@ -299,7 +299,7 @@ Essa estrutura representa a comunicação entre os diferentes módulos da aplica
 ## 📂 Estrutura do Projeto
 
 ```text
-sistema-gestao-empresarial/
+business-management-system/
 │
 ├── index.html
 └── README.md
@@ -334,7 +334,7 @@ Como o projeto não possui servidor ou banco de dados externo, os registros não
 
 A aplicação está publicada através do GitHub Pages:
 
-[![Acessar Sistema](https://img.shields.io/badge/Acessar-Sistema%20Online-00C7B7?style=for-the-badge)](https://juliamergulhao.github.io/sistema-gestao-empresarial/)
+[![Acessar Sistema](https://img.shields.io/badge/Acessar-Sistema%20Online-00C7B7?style=for-the-badge)](https://github.com/juliamergulhao/business-management-system)
 
 ### 💻 Localmente
 
