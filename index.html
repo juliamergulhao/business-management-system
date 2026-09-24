@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modelagem BPMN — Onboarding de Fornecedor</title>
+<style>
+:root{--bg:#f5f3f8;--card:#fff;--ink:#251d2e;--muted:#706878;--p:#5b247a;--p2:#7d3ca1;--blue:#245aa8;--green:#287a55;--red:#a43e4b;--amber:#9b6b16;--line:#d9d2df}
+*{box-sizing:border-box} body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,#4b1768,#713195);color:#fff;padding:28px 5vw}
+header h1{margin:0 0 7px;font-size:clamp(24px,4vw,40px)} header p{margin:0;opacity:.9;max-width:900px}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:14px 5vw;background:#fff;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line)}
+nav button,.btn{border:0;border-radius:9px;padding:10px 14px;background:#eee8f2;color:#4b1768;font-weight:700;cursor:pointer}
+nav button.active,.btn.primary{background:var(--p);color:#fff}
+main{max-width:1250px;margin:auto;padding:24px}.section{display:none}.section.active{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:18px;box-shadow:0 5px 18px #3214450d}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.kpi{padding:18px;border-radius:14px;background:#faf8fc;border-left:5px solid var(--p)} .kpi b{display:block;font-size:28px;margin-top:8px}
+h2{color:#4b1768;margin-top:0} h3{margin:5px 0 10px}.muted{color:var(--muted)}
+.badge{display:inline-block;padding:5px 9px;border-radius:99px;background:#eee8f2;color:#5b247a;font-size:12px;font-weight:800}
+.problem{border-left:5px solid var(--red)}.future{border-left:5px solid var(--green)}
+.bpmn-wrap{overflow:auto;padding-bottom:8px}.bpmn{min-width:1050px;border:2px solid #574d60;background:#fff;border-radius:12px;overflow:hidden}
+.pool-title{background:#302637;color:#fff;padding:8px 12px;font-weight:800}.lane{display:grid;grid-template-columns:135px 1fr;border-top:1px solid #9e96a5;min-height:125px}
+.lane-name{background:#f0ebf4;padding:12px;font-weight:800;border-right:1px solid #9e96a5;display:flex;align-items:center}
+.flow{display:flex;align-items:center;gap:9px;padding:18px;flex-wrap:nowrap}
+.node{min-width:125px;max-width:155px;text-align:center;padding:12px 10px;border:2px solid var(--blue);border-radius:12px;background:#f5f9ff;font-size:13px;font-weight:700}
+.event{min-width:82px;height:82px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff}
+.end{border:5px double var(--p)}
+.gateway{min-width:82px;width:82px;height:82px;transform:rotate(45deg);border-radius:6px;background:#fff4fa;border-color:#a52d71;display:flex;align-items:center;justify-content:center}
+.gateway span{transform:rotate(-45deg);font-size:12px}.arrow{font-size:27px;color:#6d6373}.wait{border-color:var(--amber);background:#fff9ec}.waste{border-color:var(--red);background:#fff5f6}.auto{border-color:var(--green);background:#f3fbf7}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 18px}.legend span{font-size:12px;padding:6px 9px;border-radius:7px;background:#fff;border:1px solid var(--line)}
+table{width:100%;border-collapse:collapse}th,td{padding:11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:#f1ecf5;color:#4b1768}
+textarea,input,select{width:100%;padding:10px;border:1px solid #cfc7d5;border-radius:8px;font:inherit}
+.actions{display:flex;gap:10px;flex-wrap:wrap}.callout{background:#f0e8f6;border-radius:12px;padding:16px}
+
+.module-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:14px 0}
+.module-form .wide{grid-column:span 2}
+.status{font-weight:800}.status.ok{color:#287a55}.status.warn{color:#9b6b16}.status.bad{color:#a43e4b}
+.smallbtn{border:0;border-radius:7px;padding:7px 9px;background:#eee8f2;color:#4b1768;font-weight:700;cursor:pointer}
+.danger{background:#fff0f1;color:#9b2635}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:14px 0}
+.summary>div{background:#faf8fc;border:1px solid var(--line);border-radius:12px;padding:14px}
+.summary b{display:block;font-size:22px;color:#4b1768;margin-top:5px}
+
+
+/* Ajustes de alinhamento do fluxo */
+.flow{min-height:124px;display:flex;align-items:center;gap:12px;padding:18px 22px;flex-wrap:nowrap}
+.flow .node{flex:0 0 140px;min-width:140px;min-height:64px;display:flex;align-items:center;justify-content:center}
+.flow .event{flex:0 0 82px;min-width:82px;min-height:82px}
+.flow .gateway{flex:0 0 82px;min-width:82px;min-height:82px}
+.flow .arrow{flex:0 0 30px;width:30px;text-align:center;line-height:1;font-size:26px}
+
+@media(max-width:700px){main{padding:14px}.lane{grid-template-columns:95px 1fr}.lane-name{font-size:12px}}
+
+.mindmap-wrap{overflow:auto;padding:18px 0}
+.mindmap{position:relative;min-width:1050px;min-height:650px;background:linear-gradient(#fff,#fcfafd);border:1px solid var(--line);border-radius:18px}
+.mindmap svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none}
+.mindmap .mnode{position:absolute;z-index:2;width:190px;min-height:76px;padding:12px;border:2px solid #7b6990;border-radius:16px;background:#fff;text-align:center;display:flex;flex-direction:column;justify-content:center;box-shadow:0 4px 12px #32144514}
+.mindmap .mnode strong{display:block;color:#4b1768;margin-bottom:5px}
+.mindmap .center{left:430px;top:265px;width:210px;min-height:110px;background:#5b247a;color:#fff;border-color:#5b247a;border-radius:50%}
+.mindmap .center strong{color:#fff;font-size:17px}
+.mindmap .good{border-color:#287a55;background:#f3fbf7}.mindmap .bad{border-color:#a43e4b;background:#fff5f6}
+.mindmap .warn{border-color:#9b6b16;background:#fff9ec}.mindmap .info{border-color:#245aa8;background:#f5f9ff}
+.map-note{font-size:13px;color:var(--muted);margin-top:8px}
+
+@media print{nav,.no-print{display:none!important}body{background:#fff}.section{display:block!important;page-break-after:always}.card{box-shadow:none}header{print-color-adjust:exact;-webkit-print-color-adjust:exact}.bpmn-wrap{overflow:visible;zoom:.72}}
+
+/* ===== Interface profissional ===== */
+:root{
+ --bg:#f4f6f9;--card:#fff;--ink:#20232a;--muted:#707784;--p:#54206f;--p2:#744092;
+ --blue:#3569a8;--green:#2f7d5a;--red:#b24a56;--amber:#a77a26;--line:#e2e5ea;
+ --sidebar:#24142f;--sidebar2:#321942;--shadow:0 8px 26px rgba(31,24,38,.07)
+}
+body{background:var(--bg);color:var(--ink)}
+.topbar{margin-left:260px;min-height:128px;padding:24px 34px;background:#fff;color:var(--ink);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:20px}
+.topbar h1{font-size:30px;margin:4px 0 5px;color:#2b1d31}.topbar p{color:var(--muted);margin:0}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;color:var(--p)}
+.app-shell{display:block}.sidebar{position:fixed;left:0;top:0;bottom:0;width:260px;background:linear-gradient(180deg,var(--sidebar),var(--sidebar2));padding:22px 14px;overflow-y:auto;z-index:30;color:#fff}
+.brand{display:flex;align-items:center;gap:11px;padding:0 8px 22px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:18px}
+.brand-mark{width:42px;height:42px;border-radius:12px;background:#fff;color:var(--p);display:grid;place-items:center;font-weight:900}
+.brand strong{display:block;font-size:14px}.brand small{display:block;color:#c8b9d0;margin-top:2px}
+.menu-group{margin:18px 0}.menu-label{display:block;padding:0 10px 7px;color:#aa99b4;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.side-link{width:100%;border:0;background:transparent;color:#ded4e4;padding:10px 11px;border-radius:9px;text-align:left;font-weight:650;cursor:pointer;margin:2px 0;display:flex;gap:10px;align-items:center}
+.side-link span{width:18px;text-align:center;color:#bfaacb}.side-link:hover{background:rgba(255,255,255,.07);color:#fff}.side-link.active{background:#fff;color:var(--p)}.side-link.active span{color:var(--p)}
+.content-area{margin-left:260px}main{max-width:1450px;margin:0 auto;padding:28px 34px 48px}
+.card{border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:22px}
+h2{font-size:21px;color:#35213e}h3{font-size:16px}
+.kpi{background:#fff;border:1px solid var(--line);border-left:0;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--p)}
+.kpi b{font-size:26px;color:#2e2134}
+table{font-size:14px}th{background:#f7f5f9;color:#4a3154;font-size:12px;text-transform:uppercase;letter-spacing:.03em}
+th,td{padding:12px 13px}
+input,select,textarea{background:#fff;border:1px solid #d9dde3;transition:.15s}input:focus,select:focus,textarea:focus{outline:none;border-color:#7b5290;box-shadow:0 0 0 3px rgba(84,32,111,.08)}
+.btn{transition:.15s}.btn:hover{transform:translateY(-1px)}
+.bpmn{border:1px solid #cfd4db;box-shadow:0 4px 18px rgba(31,24,38,.05)}.pool-title{background:#382344;padding:10px 14px}.lane-name{background:#f6f3f8;color:#4b3155}
+.callout{background:#f7f4f9;border-left:4px solid var(--p)}
+.module-form{background:#fafbfc;border:1px solid var(--line);border-radius:12px;padding:16px}
+.summary>div{background:#fff;box-shadow:0 3px 14px rgba(31,24,38,.05)}
+.dashboard-kpis{display:grid;grid-template-columns:repeat(6,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.dash-card{background:#fff;border:1px solid var(--line);border-radius:13px;padding:16px;box-shadow:var(--shadow)}
+.dash-card span{display:block;font-size:12px;color:var(--muted);font-weight:700}.dash-card b{display:block;font-size:23px;margin-top:7px;color:#33203d}
+.quick-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px}
+.quick-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.quick-action{border:1px solid var(--line);background:#fff;border-radius:11px;padding:14px;text-align:left;cursor:pointer}.quick-action:hover{border-color:#9a7baa;background:#fcfafd}
+.process-chip{display:inline-block;border-radius:99px;padding:5px 9px;font-size:11px;font-weight:800;background:#efe8f3;color:var(--p)}
+@media(max-width:1050px){.dashboard-kpis{grid-template-columns:repeat(3,1fr)}.quick-grid{grid-template-columns:1fr}}
+@media(max-width:760px){
+ .sidebar{position:static;width:100%;height:auto}.topbar,.content-area{margin-left:0}.topbar{padding:20px;min-height:auto}.topbar .btn{display:none}
+ .menu-group{margin:10px 0}.side-link{display:inline-flex;width:auto}.menu-label{margin-top:10px}.brand{margin-bottom:8px}
+ main{padding:18px}.dashboard-kpis{grid-template-columns:repeat(2,1fr)}.quick-actions{grid-template-columns:1fr}
+}
+@media print{.sidebar,.topbar .btn{display:none!important}.topbar,.content-area{margin-left:0}.topbar{padding:20px}.dashboard-kpis{grid-template-columns:repeat(3,1fr)}}
+
+
+/* ===== Lavender theme + collapsible sidebar ===== */
+:root{
+ --bg:#f8f7fb;--card:#ffffff;--ink:#332f3a;--muted:#77717f;
+ --p:#8d78a8;--p2:#a995c2;--blue:#7089b5;--green:#6f9b82;
+ --red:#bd7880;--amber:#b49a68;--line:#e9e4ee;
+ --sidebar:#eee8f4;--sidebar2:#e6dced;--shadow:0 8px 26px rgba(84,66,101,.07)
+}
+.sidebar{
+ width:260px;background:linear-gradient(180deg,#eee8f4,#e5daed);
+ color:#453b4d;border-right:1px solid #ddd2e5;transition:width .25s ease;padding-top:72px;
+}
+.topbar,.content-area{transition:margin-left .25s ease}
+.topbar{margin-left:260px}
+.content-area{margin-left:260px}
+.brand{border-bottom:1px solid rgba(93,72,108,.13);color:#493e51}
+.brand-mark{background:#9a83b1;color:#fff}
+.brand small,.menu-label{color:#8b7b96}
+.side-link{color:#5e5267}
+.side-link span{color:#907ba0}
+.side-link:hover{background:rgba(255,255,255,.55);color:#5c4869}
+.side-link.active{background:#fff;color:#715986;box-shadow:0 4px 12px rgba(84,66,101,.07)}
+.side-link.active span{color:#8d78a8}
+.eyebrow{color:#8d78a8}
+.btn.primary{background:#8d78a8}.btn.primary:hover{background:#7f6b99}
+.pool-title{background:#89749f}
+.kpi:before{background:#a58bb9}
+.process-chip{background:#f0eaf5;color:#806994}
+.callout{background:#faf7fc;border-left-color:#a58bb9}
+h2{color:#55475f}
+.dash-card b,.summary b,.kpi b{color:#594a63}
+
+/* Sidebar toggle */
+.sidebar-toggle{
+ position:fixed;left:16px;top:16px;z-index:60;width:42px;height:42px;border:1px solid #d8cce1;
+ border-radius:12px;background:#fff;color:#7d668f;display:grid;place-items:center;cursor:pointer;
+ box-shadow:0 5px 16px rgba(70,52,83,.12);font-size:21px;transition:left .25s ease,transform .2s ease;
+}
+.sidebar-toggle:hover{transform:translateY(-1px)}
+.sidebar.collapsed{width:78px;padding-left:10px;padding-right:10px}
+.sidebar.collapsed + .content-area{}
+body.sidebar-collapsed .topbar,body.sidebar-collapsed .content-area{margin-left:78px}
+body.sidebar-collapsed .sidebar-toggle{left:18px}
+.sidebar.collapsed .brand{padding:0 7px 20px;justify-content:center}
+.sidebar.collapsed .brand>div:last-child,.sidebar.collapsed .menu-label{display:none}
+.sidebar.collapsed .side-link{justify-content:center;padding:11px 8px;font-size:0}
+.sidebar.collapsed .side-link span{font-size:17px;width:24px}
+.sidebar.collapsed .menu-group{margin:13px 0}
+.sidebar.collapsed .brand-mark{width:40px;height:40px}
+.sidebar.collapsed .side-link{position:relative}
+.sidebar.collapsed .side-link:hover:after{
+ content:attr(data-label);position:absolute;left:58px;top:50%;transform:translateY(-50%);
+ white-space:nowrap;background:#4d4055;color:#fff;padding:7px 9px;border-radius:7px;font-size:12px;
+ box-shadow:0 4px 12px rgba(0,0,0,.12);z-index:100;
+}
+
+/* Better use of horizontal space in operational modules */
+#estoque .card,#vendas .card,#pagar .card,#receber .card{max-width:none}
+#estoque table,#vendas table,#pagar table,#receber table{min-width:820px}
+@media(max-width:760px){
+ .sidebar{position:fixed;width:260px;height:100vh;transform:translateX(0);padding-top:72px}
+ body.sidebar-collapsed .sidebar{transform:translateX(-100%);width:260px}
+ .topbar,.content-area,body.sidebar-collapsed .topbar,body.sidebar-collapsed .content-area{margin-left:0}
+ .sidebar-toggle,body.sidebar-collapsed .sidebar-toggle{left:16px}
+ .topbar{padding-left:72px}
+}
+@media print{.sidebar-toggle{display:none!important}}
+
+
+/* ===== Ajuste final: menu compacto + roxo elegante ===== */
+:root{
+ --bg:#f7f6f9;--card:#ffffff;--ink:#302d34;--muted:#77717c;
+ --p:#74508c;--p2:#8b68a1;--blue:#617fa8;--green:#56856b;
+ --red:#b15e69;--amber:#a98749;--line:#e5e0e8;
+ --sidebar:#3f294c;--sidebar2:#51345f;--shadow:0 8px 24px rgba(62,43,72,.07)
+}
+.sidebar{
+ width:230px;background:linear-gradient(180deg,#3f294c,#51345f);
+ color:#fff;border-right:0;padding:66px 11px 18px;
+}
+.topbar,.content-area{margin-left:230px}
+.brand{color:#fff;border-bottom:1px solid rgba(255,255,255,.13);padding-bottom:16px;margin-bottom:12px}
+.brand-mark{background:#fff;color:#68477c}
+.brand small,.menu-label{color:#cbbdd2}
+.menu-group{margin:12px 0}
+.menu-label{padding-bottom:4px;font-size:9px}
+.side-link{color:#e8e0ec;padding:8px 9px;margin:1px 0;font-size:13px;border-radius:8px}
+.side-link span{color:#d2c0dc}
+.side-link:hover{background:rgba(255,255,255,.09);color:#fff}
+.side-link.active{background:#fff;color:#68477c;box-shadow:none}
+.side-link.active span{color:#74508c}
+
+/* Menu recolhido menor para não cobrir o conteúdo */
+.sidebar.collapsed{width:58px;padding-left:7px;padding-right:7px}
+body.sidebar-collapsed .topbar,body.sidebar-collapsed .content-area{margin-left:58px}
+.sidebar.collapsed .brand{display:none}
+.sidebar.collapsed .menu-group{margin:7px 0}
+.sidebar.collapsed .side-link{height:38px;padding:7px 5px}
+.sidebar.collapsed .side-link span{font-size:15px;width:20px}
+.sidebar.collapsed .side-link:hover:after{left:48px}
+.sidebar-toggle{
+ left:10px;top:12px;width:38px;height:38px;border-radius:10px;
+ border:1px solid #d9d0de;color:#68477c;background:#fff;font-size:19px;
+}
+body.sidebar-collapsed .sidebar-toggle{left:10px}
+
+/* Mais espaço útil e componentes um pouco menores */
+main{padding:24px 28px 44px}
+.topbar{padding:20px 28px;min-height:112px}
+.topbar h1{font-size:27px}
+.card{padding:19px}
+.module-form{padding:13px;gap:9px;grid-template-columns:repeat(auto-fit,minmax(165px,1fr))}
+.module-form label{font-size:13px}
+input,select,textarea{padding:9px 10px;font-size:14px}
+.btn{padding:9px 13px;font-size:13px}
+.summary{gap:10px}
+.summary>div{padding:12px}
+.summary b{font-size:20px}
+table{font-size:13px}
+th,td{padding:10px 11px}
+
+/* As tabelas continuam roláveis apenas quando realmente necessário */
+#estoque .card>div[style*="overflow"],
+#vendas .card>div[style*="overflow"],
+#pagar .card>div[style*="overflow"],
+#receber .card>div[style*="overflow"]{max-width:100%;overflow-x:auto!important}
+
+@media(max-width:760px){
+ .sidebar{width:230px}
+ body.sidebar-collapsed .sidebar{width:230px}
+ .topbar,.content-area,body.sidebar-collapsed .topbar,body.sidebar-collapsed .content-area{margin-left:0}
+ main{padding:16px}.topbar{padding:18px 16px 18px 64px}
+}
+
+
+/* ===== Layout responsivo real para módulos operacionais ===== */
+.content-area, main, .section, .card{box-sizing:border-box}
+.content-area{width:auto;max-width:none;min-width:0}
+main{width:100%;max-width:none}
+#estoque,#vendas,#pagar,#receber{width:100%;max-width:none;min-width:0}
+#estoque .card,#vendas .card,#pagar .card,#receber .card{width:100%;max-width:none;min-width:0}
+
+/* O formulário muda automaticamente conforme o espaço disponível */
+#estoque .module-form,#vendas .module-form,#pagar .module-form,#receber .module-form{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));
+ width:100%;max-width:none;min-width:0;
+}
+
+/* Com menu aberto: componentes mais compactos para caberem no espaço restante */
+body:not(.sidebar-collapsed) #estoque .module-form,
+body:not(.sidebar-collapsed) #vendas .module-form,
+body:not(.sidebar-collapsed) #pagar .module-form,
+body:not(.sidebar-collapsed) #receber .module-form{
+ grid-template-columns:repeat(auto-fit,minmax(min(165px,100%),1fr));
+}
+
+/* Com menu recolhido: aproveita a largura extra */
+body.sidebar-collapsed #estoque .module-form,
+body.sidebar-collapsed #vendas .module-form,
+body.sidebar-collapsed #pagar .module-form,
+body.sidebar-collapsed #receber .module-form{
+ grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));
+}
+
+/* Tabelas nunca empurram ou escondem o lado esquerdo da página */
+#estoque .card>div[style*="overflow"],
+#vendas .card>div[style*="overflow"],
+#pagar .card>div[style*="overflow"],
+#receber .card>div[style*="overflow"]{
+ width:100%;max-width:100%;min-width:0;overflow-x:auto!important;
+ -webkit-overflow-scrolling:touch;
+}
+#estoque table,#vendas table,#pagar table,#receber table{
+ width:100%;min-width:700px;max-width:none;
+}
+
+/* KPIs também se reorganizam */
+#estoque .summary,#vendas .summary,#pagar .summary,#receber .summary{
+ grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+ width:100%;
+}
+
+/* Evita que textos e inputs estourem suas colunas */
+.module-form label,.module-form input,.module-form select{min-width:0;width:100%;box-sizing:border-box}
+.section h2,.section h3,.section p{max-width:100%}
+
+/* Transição suave ao abrir/fechar */
+#estoque .module-form,#vendas .module-form,#pagar .module-form,#receber .module-form,
+#estoque .summary,#vendas .summary,#pagar .summary,#receber .summary{
+ transition:grid-template-columns .25s ease;
+}
+
+@media(max-width:1100px){
+ body:not(.sidebar-collapsed) #estoque .module-form,
+ body:not(.sidebar-collapsed) #vendas .module-form,
+ body:not(.sidebar-collapsed) #pagar .module-form,
+ body:not(.sidebar-collapsed) #receber .module-form{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+ }
+}
+@media(max-width:820px){
+ #estoque .module-form,#vendas .module-form,#pagar .module-form,#receber .module-form{
+  grid-template-columns:1fr!important;
+ }
+ #estoque table,#vendas table,#pagar table,#receber table{min-width:620px}
+}
+
+
+/* ===== Correção definitiva de largura / sidebar =====
+   O conteúdo passa a usar exatamente a área restante da viewport.
+   Assim nenhuma das quatro telas pode ficar por baixo do menu. */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+.topbar,.content-area{
+ margin-left:230px!important;
+ width:calc(100vw - 230px)!important;
+ max-width:calc(100vw - 230px)!important;
+ box-sizing:border-box;
+}
+body.sidebar-collapsed .topbar,
+body.sidebar-collapsed .content-area{
+ margin-left:58px!important;
+ width:calc(100vw - 58px)!important;
+ max-width:calc(100vw - 58px)!important;
+}
+.content-area main{
+ width:100%!important;
+ max-width:100%!important;
+ min-width:0!important;
+ margin:0!important;
+ box-sizing:border-box;
+}
+#estoque,#vendas,#pagar,#receber,
+#estoque>.card,#vendas>.card,#pagar>.card,#receber>.card{
+ width:100%!important;
+ max-width:100%!important;
+ min-width:0!important;
+ box-sizing:border-box;
+}
+
+/* Formulários realmente fluidos */
+#estoque .module-form,#vendas .module-form,
+#pagar .module-form,#receber .module-form{
+ width:100%!important;max-width:100%!important;min-width:0!important;
+ grid-template-columns:repeat(auto-fit,minmax(150px,1fr))!important;
+ box-sizing:border-box;
+}
+body.sidebar-collapsed #estoque .module-form,
+body.sidebar-collapsed #vendas .module-form,
+body.sidebar-collapsed #pagar .module-form,
+body.sidebar-collapsed #receber .module-form{
+ grid-template-columns:repeat(auto-fit,minmax(185px,1fr))!important;
+}
+
+/* Só a tabela pode rolar horizontalmente; a página inteira nunca rola */
+#estoque .card>div[style*="overflow"],
+#vendas .card>div[style*="overflow"],
+#pagar .card>div[style*="overflow"],
+#receber .card>div[style*="overflow"]{
+ display:block!important;width:100%!important;max-width:100%!important;
+ min-width:0!important;overflow-x:auto!important;overflow-y:hidden!important;
+ box-sizing:border-box;
+}
+#estoque table,#vendas table,#pagar table,#receber table{
+ width:100%!important;min-width:680px!important;
+}
+
+/* Em telas menores, o menu vira sobreposição e não reduz o conteúdo */
+@media(max-width:760px){
+ .topbar,.content-area,
+ body.sidebar-collapsed .topbar,body.sidebar-collapsed .content-area{
+  margin-left:0!important;width:100vw!important;max-width:100vw!important;
+ }
+ #estoque .module-form,#vendas .module-form,
+ #pagar .module-form,#receber .module-form{
+  grid-template-columns:1fr!important;
+ }
+}
+
+
+/* ===== FIX FINAL — sidebar nunca sobrepõe o conteúdo ===== */
+:root{--side-open:230px;--side-closed:58px}
+
+/* Base: menu aberto */
+.sidebar{
+ position:fixed!important;
+ left:0!important;top:0!important;bottom:0!important;
+ width:var(--side-open)!important;
+ transform:none!important;
+}
+.topbar,.content-area{
+ margin-left:var(--side-open)!important;
+ width:calc(100% - var(--side-open))!important;
+ max-width:calc(100% - var(--side-open))!important;
+}
+
+/* Menu fechado */
+body.sidebar-collapsed .sidebar{
+ width:var(--side-closed)!important;
+ transform:none!important;
+}
+body.sidebar-collapsed .topbar,
+body.sidebar-collapsed .content-area{
+ margin-left:var(--side-closed)!important;
+ width:calc(100% - var(--side-closed))!important;
+ max-width:calc(100% - var(--side-closed))!important;
+}
+
+/* As 4 telas começam sempre DEPOIS da sidebar */
+#estoque,#vendas,#pagar,#receber{
+ position:relative!important;
+ left:0!important;
+ margin-left:0!important;
+ padding-left:0!important;
+ overflow:visible!important;
+}
+#estoque>.card,#vendas>.card,#pagar>.card,#receber>.card{
+ margin-left:0!important;
+ width:100%!important;
+ max-width:100%!important;
+}
+
+/* Formulários se encaixam no espaço real */
+#estoque .module-form,#vendas .module-form,
+#pagar .module-form,#receber .module-form{
+ display:grid!important;
+ grid-template-columns:repeat(auto-fit,minmax(170px,1fr))!important;
+ width:100%!important;
+ max-width:100%!important;
+ overflow:hidden!important;
+}
+.module-form>*{min-width:0!important;max-width:100%!important}
+
+/* Em vez de alterar a página, só tabelas grandes têm scroll */
+#estoque .card>div[style*="overflow"],
+#vendas .card>div[style*="overflow"],
+#pagar .card>div[style*="overflow"],
+#receber .card>div[style*="overflow"]{
+ overflow-x:auto!important;
+ width:100%!important;
+ max-width:100%!important;
+}
+
+/* Importante: anula os breakpoints antigos que estavam colocando
+   o conteúdo atrás do menu em telas/zoom menores. */
+@media (min-width:421px){
+ .sidebar{position:fixed!important;width:var(--side-open)!important;transform:none!important}
+ body.sidebar-collapsed .sidebar{width:var(--side-closed)!important;transform:none!important}
+ .topbar,.content-area{
+   margin-left:var(--side-open)!important;
+   width:calc(100% - var(--side-open))!important;
+   max-width:calc(100% - var(--side-open))!important;
+ }
+ body.sidebar-collapsed .topbar,
+ body.sidebar-collapsed .content-area{
+   margin-left:var(--side-closed)!important;
+   width:calc(100% - var(--side-closed))!important;
+   max-width:calc(100% - var(--side-closed))!important;
+ }
+}
+
+/* Celular de verdade: menu vira gaveta sobreposta */
+@media (max-width:420px){
+ .sidebar{width:var(--side-open)!important}
+ body.sidebar-collapsed .sidebar{transform:translateX(-100%)!important;width:var(--side-open)!important}
+ .topbar,.content-area,
+ body.sidebar-collapsed .topbar,body.sidebar-collapsed .content-area{
+   margin-left:0!important;width:100%!important;max-width:100%!important;
+ }
+ #estoque .module-form,#vendas .module-form,
+ #pagar .module-form,#receber .module-form{grid-template-columns:1fr!important}
+}
+
+
+/* Compactação das 4 abas operacionais */
+#estoque,#vendas,#pagar,#receber{font-size:13px!important}
+#estoque h2,#vendas h2,#pagar h2,#receber h2{font-size:18px!important}
+#estoque p,#vendas p,#pagar p,#receber p{font-size:12.5px!important}
+#estoque .card,#vendas .card,#pagar .card,#receber .card{padding:16px!important}
+#estoque .module-form,#vendas .module-form,#pagar .module-form,#receber .module-form{padding:11px!important;gap:7px!important;grid-template-columns:repeat(auto-fit,minmax(125px,1fr))!important}
+#estoque .module-form label,#vendas .module-form label,#pagar .module-form label,#receber .module-form label{font-size:11.5px!important}
+#estoque input,#estoque select,#vendas input,#vendas select,#pagar input,#pagar select,#receber input,#receber select{font-size:12px!important;padding:7px 8px!important;min-height:34px!important}
+#estoque .btn,#vendas .btn,#pagar .btn,#receber .btn{font-size:11.5px!important;padding:8px 11px!important}
+#estoque .summary,#vendas .summary,#pagar .summary,#receber .summary{gap:7px!important;grid-template-columns:repeat(auto-fit,minmax(125px,1fr))!important}
+#estoque .summary>div,#vendas .summary>div,#pagar .summary>div,#receber .summary>div{font-size:11.5px!important;padding:10px!important}
+#estoque .summary b,#vendas .summary b,#pagar .summary b,#receber .summary b{font-size:18px!important}
+#estoque table,#vendas table,#pagar table,#receber table{font-size:11px!important;min-width:500px!important}
+#estoque th,#estoque td,#vendas th,#vendas td,#pagar th,#pagar td,#receber th,#receber td{padding:7px 6px!important;white-space:normal!important}
+#estoque th,#vendas th,#pagar th,#receber th{font-size:9.5px!important}
+#estoque .smallbtn,#vendas .smallbtn,#pagar .smallbtn,#receber .smallbtn{font-size:10px!important;padding:5px 6px!important}
+@media(max-width:900px){#estoque .module-form,#vendas .module-form,#pagar .module-form,#receber .module-form{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:560px){#estoque .module-form,#vendas .module-form,#pagar .module-form,#receber .module-form{grid-template-columns:1fr!important}}
+
+
+/* segurança de alinhamento das telas operacionais */
+#estoque,#vendas,#pagar,#receber{padding-left:0!important;margin-left:0!important}
+.content-area main{overflow-x:hidden}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <span class="eyebrow">ARQUITETURA EMPRESARIAL • GESTÃO INTEGRADA</span>
+    <h1>Sistema de Gestão Empresarial</h1>
+    <p>Processos, operações e financeiro em uma visão integrada.</p>
+  </div>
+  <button class="btn primary no-print" onclick="window.print()">Gerar relatório PDF</button>
+</header>
+
+<div class="app-shell">
+<button id="sidebarToggle" class="sidebar-toggle no-print" aria-label="Recolher menu" title="Recolher menu">☰</button>
+<aside class="sidebar no-print" id="sidebar">
+  <div class="brand"><div class="brand-mark">AE</div><div><strong>Gestão Empresarial</strong><small>Projeto acadêmico</small></div></div>
+
+  <div class="menu-group"><span class="menu-label">Visão geral</span>
+    <button class="side-link active" data-id="visao" data-label="Dashboard"><span>▦</span> Dashboard</button>
+  </div>
+
+  <div class="menu-group"><span class="menu-label">Arquitetura do processo</span>
+    <button class="side-link" data-id="asis" data-label="Fluxo AS-IS"><span>→</span> Fluxo AS-IS</button>
+    <button class="side-link" data-id="tobe" data-label="Fluxo TO-BE"><span>✓</span> Fluxo TO-BE</button>
+    <button class="side-link" data-id="conceitos" data-label="Conceitos"><span>◇</span> Conceitos</button>
+    <button class="side-link" data-id="procedimentos" data-label="Procedimentos"><span>≡</span> Procedimentos</button>
+    <button class="side-link" data-id="analise" data-label="Análise"><span>⌁</span> Análise</button>
+    <button class="side-link" data-id="indicadores" data-label="Indicadores"><span>↗</span> Indicadores</button>
+    <button class="side-link" data-id="justificativas" data-label="Justificativas"><span>✓</span> Justificativas</button>
+  </div>
+
+  <div class="menu-group"><span class="menu-label">Operação</span>
+    <button class="side-link" data-id="estoque" data-label="Estoque"><span>□</span> Estoque</button>
+    <button class="side-link" data-id="vendas" data-label="Vendas"><span>◫</span> Vendas</button>
+  </div>
+
+  <div class="menu-group"><span class="menu-label">Financeiro</span>
+    <button class="side-link" data-id="pagar" data-label="Contas a Pagar"><span>↓</span> Contas a Pagar</button>
+    <button class="side-link" data-id="receber" data-label="Contas a Receber"><span>↑</span> Contas a Receber</button>
+  </div>
+</aside>
+<div class="content-area">
+<main>
+<section id="visao" class="section active">
+ <div class="dashboard-kpis">
+   <div class="dash-card"><span>Produtos cadastrados</span><b id="dashProdutos">0</b></div>
+   <div class="dash-card"><span>Estoque baixo</span><b id="dashBaixo">0</b></div>
+   <div class="dash-card"><span>Vendas registradas</span><b id="dashVendas">0</b></div>
+   <div class="dash-card"><span>Faturamento</span><b id="dashFat">R$ 0,00</b></div>
+   <div class="dash-card"><span>A receber</span><b id="dashReceber">R$ 0,00</b></div>
+   <div class="dash-card"><span>A pagar</span><b id="dashPagar">R$ 0,00</b></div>
+ </div>
+
+ <div class="quick-grid">
+  <div class="card">
+   <span class="process-chip">PROCESSO EM ANÁLISE</span>
+   <h2 style="margin-top:12px">Onboarding de Fornecedor</h2>
+   <p>O processo atual envolve Compras, Jurídico, Fiscal e Segurança. O diagnóstico identifica espera entre áreas, reenvio de documentos, validações repetidas e redigitação de dados.</p>
+   <div class="grid" style="margin:18px 0">
+    <div class="kpi">Lead time atual<b>25 dias</b><small>baseline do estudo de caso</small></div>
+    <div class="kpi">Trabalho efetivo<b>&lt; 4h</b><small>grande parte do tempo é espera</small></div>
+    <div class="kpi">Redigitação<b>3 sistemas</b><small>oportunidade de integração</small></div>
+   </div>
+   <div class="actions no-print">
+    <button class="btn primary" onclick="goSection('asis')">Ver processo AS-IS</button>
+    <button class="btn" onclick="goSection('tobe')">Ver proposta TO-BE</button>
+   </div>
+  </div>
+  <div class="card">
+   <h2>Acesso rápido</h2>
+   <p class="muted">Operações principais do sistema.</p>
+   <div class="quick-actions">
+    <button class="quick-action" onclick="goSection('estoque')"><b>Estoque</b><br><small>Produtos e reposição</small></button>
+    <button class="quick-action" onclick="goSection('vendas')"><b>Nova venda</b><br><small>Venda e baixa automática</small></button>
+    <button class="quick-action" onclick="goSection('pagar')"><b>Contas a pagar</b><br><small>Despesas e vencimentos</small></button>
+    <button class="quick-action" onclick="goSection('receber')"><b>Contas a receber</b><br><small>Recebíveis e vendas a prazo</small></button>
+   </div>
+  </div>
+ </div>
+
+ <div class="card future" style="margin-top:18px">
+   <h2>Integração do sistema</h2>
+   <p><b>Venda registrada → baixa automática no estoque → venda a prazo gera Contas a Receber.</b> A área acadêmica documenta o processo atual e futuro; os módulos operacionais demonstram como processos, dados e sistemas podem funcionar de forma integrada.</p>
+ </div>
+</section>
+
+<section id="asis" class="section">
+ <div class="card">
+ <h2>Modelagem gráfica — Estado atual (AS-IS)</h2>
+ <p class="muted">Fluxo ponta a ponta do onboarding atual, organizado por responsabilidades. As setas ficam centralizadas em cada linha para melhorar a leitura.</p>
+ <div class="legend"><span>🔵 tarefa</span><span>🟠 espera/handoff</span><span>🔴 retrabalho/dado repetido</span><span>◇ decisão</span><span>○ evento</span></div>
+ <div class="bpmn-wrap"><div class="bpmn">
+  <div class="pool-title">PROCESSO: Onboarding de fornecedor — AS-IS</div>
+  <div class="lane"><div class="lane-name">Fornecedor</div><div class="flow">
+    <div class="node event">Início<br>solicitação</div><div class="arrow">→</div><div class="node">Enviar documentos</div><div class="arrow">→</div><div class="node wait">Aguardar retorno</div>
+  </div></div>
+  <div class="lane"><div class="lane-name">Compras</div><div class="flow">
+    <div class="node">Receber documentos</div><div class="arrow">→</div><div class="node waste">Conferir / reenviar</div><div class="arrow">→</div><div class="node waste">Digitar dados</div><div class="arrow">→</div><div class="node wait">Encaminhar</div>
+  </div></div>
+  <div class="lane"><div class="lane-name">Jurídico</div><div class="flow">
+    <div class="node wait">Receber da fila</div><div class="arrow">→</div><div class="node">Revisar contrato</div><div class="arrow">→</div><div class="node waste">Revalidar informações</div><div class="arrow">→</div><div class="node wait">Encaminhar</div>
+  </div></div>
+  <div class="lane"><div class="lane-name">Fiscal</div><div class="flow">
+    <div class="node wait">Receber da fila</div><div class="arrow">→</div><div class="node">Validar cadastro fiscal</div><div class="arrow">→</div><div class="node waste">Redigitar no sistema</div><div class="arrow">→</div><div class="node wait">Encaminhar</div>
+  </div></div>
+  <div class="lane"><div class="lane-name">Segurança</div><div class="flow">
+    <div class="node">Avaliar acesso</div><div class="arrow">→</div><div class="node gateway"><span>Regular?</span></div><div class="arrow">→</div><div class="node end event">Fim<br>cadastro</div>
+  </div></div>
+ </div></div>
+ <div class="callout"><b>Leitura do AS-IS:</b> o fluxo evidencia aprovações sequenciais, espera entre áreas, reenvio de documentos, validações repetidas e redigitação. O principal desperdício está no tempo entre as atividades e nos handoffs.</div>
+ </div>
+</section>
+
+<section id="tobe" class="section">
+ <div class="card">
+ <h2>Modelagem gráfica — Estado futuro (TO-BE)</h2>
+ <p class="muted">Fluxo redesenhado com simplificação, automação, paralelismo, integração e tratamento separado das exceções.</p>
+ <div class="legend"><span>🟢 automatizado/integrado</span><span>🔵 tarefa/controle</span><span>◇ decisão</span></div>
+ <div class="bpmn-wrap"><div class="bpmn">
+  <div class="pool-title">PROCESSO: Onboarding de fornecedor redesenhado — TO-BE</div>
+  <div class="lane"><div class="lane-name">Fornecedor</div><div class="flow">
+    <div class="node event">Início</div><div class="arrow">→</div><div class="node auto">Cadastrar no portal</div><div class="arrow">→</div><div class="node auto">Enviar documentos digitais</div>
+  </div></div>
+  <div class="lane"><div class="lane-name">Portal / Integração</div><div class="flow">
+    <div class="node auto">Validar dados</div><div class="arrow">→</div><div class="node gateway"><span>Dados válidos?</span></div><div class="arrow">→</div><div class="node auto">Reutilizar dados</div><div class="arrow">→</div><div class="node auto">Disparar validações</div>
+  </div></div>
+  <div class="lane"><div class="lane-name">Áreas de validação</div><div class="flow">
+    <div class="node auto">Jurídico</div><div class="arrow">⇉</div><div class="node auto">Fiscal</div><div class="arrow">⇉</div><div class="node auto">Segurança</div><div class="arrow">→</div><div class="node gateway"><span>Exceção?</span></div>
+  </div></div>
+  <div class="lane"><div class="lane-name">Especialista</div><div class="flow">
+    <div class="node">Analisar exceção</div><div class="arrow">→</div><div class="node">Decidir e registrar</div>
+  </div></div>
+  <div class="lane"><div class="lane-name">Sistemas</div><div class="flow">
+    <div class="node auto">Integrar ERP + identidade</div><div class="arrow">→</div><div class="node auto">Notificar resultado</div><div class="arrow">→</div><div class="node end event">Fim<br>onboarding</div>
+  </div></div>
+ </div></div>
+ <div class="callout"><b>Leitura do TO-BE:</b> casos padrão seguem regras estáveis e automáticas; exceções recebem análise especializada. Dados são reutilizados e as validações independentes podem ocorrer em paralelo.</div>
+ </div>
+</section>
+
+
+<section id="conceitos" class="section">
+ <div class="card">
+  <h2>Conceitos utilizados na modelagem</h2>
+  <p>Esta seção descreve os conceitos apresentados no material da aula e mostra como eles são aplicados ao onboarding de fornecedores.</p>
+  <table>
+   <thead><tr><th>Conceito</th><th>Descrição</th><th>Aplicação neste caso</th></tr></thead>
+   <tbody>
+    <tr><td><b>Processo de negócio</b></td><td>Conjunto coordenado de atividades que transforma entradas em um resultado de valor. Possui início, fim, objetivo, responsáveis, regras e indicadores.</td><td>O onboarding começa com a solicitação/cadastro do fornecedor e termina com o fornecedor cadastrado e o resultado comunicado.</td></tr>
+    <tr><td><b>Visão ponta a ponta</b></td><td>Representa o processo atravessando papéis e sistemas, sem limitar a análise a um único departamento.</td><td>O modelo acompanha o fluxo entre fornecedor, Compras, Jurídico, Fiscal, Segurança e sistemas corporativos.</td></tr>
+    <tr><td><b>BPMN</b></td><td>Business Process Model and Notation: notação padronizada usada para representar processos e criar uma linguagem visual compartilhada entre negócio e tecnologia.</td><td>É a base dos fluxos AS-IS e TO-BE apresentados neste sistema.</td></tr>
+    <tr><td><b>Evento inicial</b></td><td>Representa o gatilho que inicia o processo.</td><td>A necessidade de cadastrar/onboardar um fornecedor inicia o fluxo.</td></tr>
+    <tr><td><b>Atividade / tarefa</b></td><td>Representa um trabalho executado no processo. Pode envolver pessoa, serviço, regra, envio ou recepção.</td><td>Receber documentos, revisar contrato, validar cadastro fiscal e avaliar acesso são exemplos.</td></tr>
+    <tr><td><b>Gateway / decisão</b></td><td>Controla a divergência ou convergência do fluxo. Um gateway exclusivo direciona o processo para apenas uma alternativa conforme a condição.</td><td>No futuro, decisões como “Dados válidos?” e “Existe exceção?” determinam o caminho seguido.</td></tr>
+    <tr><td><b>Pool</b></td><td>Representa um participante ou processo independente.</td><td>A modelagem identifica o processo empresarial e a interação com o fornecedor.</td></tr>
+    <tr><td><b>Lane</b></td><td>Organiza responsabilidades dentro de um participante. Pode representar papel, função ou sistema, e não apenas departamento.</td><td>Compras, Jurídico, Fiscal, Segurança, Especialista e Sistemas aparecem como responsáveis por partes do fluxo.</td></tr>
+    <tr><td><b>Fluxo de sequência</b></td><td>Mostra a ordem em que eventos, tarefas e decisões acontecem dentro do processo/pool.</td><td>As setas dos diagramas indicam a progressão das atividades.</td></tr>
+    <tr><td><b>Fluxo de mensagem</b></td><td>Representa comunicação entre participantes/pools diferentes.</td><td>O envio da solicitação/documentação e a comunicação do resultado são interações entre fornecedor e empresa.</td></tr>
+    <tr><td><b>Evento intermediário</b></td><td>Representa algo que acontece durante o processo e pode indicar espera, mensagem ou outro acontecimento que afeta o fluxo.</td><td>As esperas por recebimento e encaminhamento entre áreas são pontos relevantes para análise.</td></tr>
+    <tr><td><b>Evento final</b></td><td>Explicita o resultado ou término do processo.</td><td>O fluxo termina quando o onboarding é concluído e o resultado é comunicado.</td></tr>
+    <tr><td><b>Handoff</b></td><td>Transferência de trabalho ou informação entre responsáveis. Pode revelar espera, risco e perda de informação.</td><td>Os encaminhamentos sequenciais entre Compras, Jurídico, Fiscal e Segurança são handoffs críticos no AS-IS.</td></tr>
+    <tr><td><b>Exceção</b></td><td>Situação que foge do caso padrão e precisa de tratamento específico.</td><td>No TO-BE, casos fora das regras automáticas são encaminhados para análise especializada.</td></tr>
+    <tr><td><b>Automação</b></td><td>Aplicação de tecnologia a regras estáveis depois da análise e simplificação do processo.</td><td>Validação de dados, reutilização de informações e integração com ERP/identidade são oportunidades de automação.</td></tr>
+    <tr><td><b>Indicador</b></td><td>Medida usada para acompanhar e comparar o desempenho do processo atual e futuro.</td><td>Lead time, taxa de retrabalho e percentual de automação são os três indicadores adotados.</td></tr>
+    <tr><td><b>AS-IS</b></td><td>Representação do estado atual do processo.</td><td>E-mails, planilhas, aprovações sequenciais, reenvios, validações repetidas e redigitação em três sistemas.</td></tr>
+    <tr><td><b>TO-BE</b></td><td>Representação do estado futuro proposto após análise e redesenho.</td><td>Portal único, validações paralelas, dados reutilizados, regras automáticas, fila de exceções e integração.</td></tr>
+   </tbody>
+  </table>
+ </div>
+ <div class="card">
+  <h2>Diferença entre processo, procedimento, atividade e serviço</h2>
+  <div class="grid">
+   <div class="callout"><h3>Processo</h3><p>Visão ponta a ponta que transforma uma entrada em resultado de valor. Ex.: onboarding de fornecedor.</p></div>
+   <div class="callout"><h3>Procedimento</h3><p>Descrição de como uma parte do trabalho deve ser executada, em uma sequência definida. Ex.: procedimento para validar documentação fiscal.</p></div>
+   <div class="callout"><h3>Atividade</h3><p>Unidade de trabalho dentro do processo. Ex.: revisar contrato.</p></div>
+   <div class="callout"><h3>Serviço</h3><p>Resultado/capacidade disponibilizada a um consumidor do processo. Neste caso, o processo viabiliza o cadastro e habilitação do fornecedor.</p></div>
+  </div>
+ </div>
+</section>
+
+<section id="procedimentos" class="section">
+ <div class="card">
+  <h2>Descrição do processo atual — AS-IS</h2>
+  <p><b>Objetivo:</b> receber a documentação do fornecedor, realizar as validações necessárias e concluir seu onboarding. <b>Problema central:</b> o processo leva 25 dias, apesar de o tempo efetivo de trabalho ser inferior a quatro horas.</p>
+  <table>
+   <thead><tr><th>#</th><th>Responsável</th><th>Procedimento</th><th>Informação / sistema</th><th>Problema observado</th></tr></thead>
+   <tbody>
+    <tr><td>1</td><td>Fornecedor</td><td>Envia a solicitação e os documentos necessários para iniciar o cadastro.</td><td>Documentos e comunicação</td><td>Entrada descentralizada e possibilidade de reenvio.</td></tr>
+    <tr><td>2</td><td>Compras</td><td>Recebe os documentos, confere as informações e encaminha o processo.</td><td>E-mails e planilhas</td><td>Documentos podem ser reenviados e informações repetidas.</td></tr>
+    <tr><td>3</td><td>Compras / sistemas</td><td>Registra dados necessários para continuidade do cadastro.</td><td>Dados digitados em sistemas</td><td>O caso informa dados digitados em três sistemas, gerando retrabalho e risco de inconsistência.</td></tr>
+    <tr><td>4</td><td>Jurídico</td><td>Recebe o processo e revisa o contrato/documentação pertinente.</td><td>Contrato e documentos recebidos</td><td>Espera entre áreas e validações repetidas.</td></tr>
+    <tr><td>5</td><td>Fiscal</td><td>Valida o cadastro e as informações fiscais do fornecedor.</td><td>Cadastro fiscal</td><td>Nova transferência do processo e repetição de dados/validações.</td></tr>
+    <tr><td>6</td><td>Segurança</td><td>Avalia as necessidades relacionadas a acesso.</td><td>Dados de acesso/identidade</td><td>Mais um handoff no fluxo sequencial.</td></tr>
+    <tr><td>7</td><td>Áreas responsáveis</td><td>Tratam eventuais problemas ou exceções identificados durante as validações.</td><td>Regras e documentos</td><td>O caso aponta ausência de regra clara para exceções.</td></tr>
+    <tr><td>8</td><td>Empresa</td><td>Conclui o onboarding após as validações e registra/comunica o resultado.</td><td>Cadastros corporativos</td><td>Lead time total muito superior ao tempo efetivo de trabalho.</td></tr>
+   </tbody>
+  </table>
+ </div>
+
+ <div class="card">
+  <h2>Descrição do processo futuro — TO-BE</h2>
+  <p><b>Objetivo:</b> reduzir handoffs, espera, retrabalho e repetição de dados, mantendo controles proporcionais ao risco e separando casos padrão das exceções.</p>
+  <table>
+   <thead><tr><th>#</th><th>Responsável</th><th>Procedimento futuro</th><th>Mudança</th><th>Benefício esperado</th></tr></thead>
+   <tbody>
+    <tr><td>1</td><td>Fornecedor</td><td>Registra a solicitação e envia os documentos por um portal único.</td><td>Centralização da entrada</td><td>Reduz dispersão de documentos e reenvios.</td></tr>
+    <tr><td>2</td><td>Portal / sistema</td><td>Valida dados e documentos recebidos antes de encaminhar o processo.</td><td>Controle na origem</td><td>Erros podem ser identificados mais cedo.</td></tr>
+    <tr><td>3</td><td>Portal / integrações</td><td>Reutiliza os dados já fornecidos, evitando nova digitação.</td><td>Eliminação de redundância</td><td>Reduz retrabalho e inconsistência.</td></tr>
+    <tr><td>4</td><td>Jurídico, Fiscal e Segurança</td><td>Executam validações independentes em paralelo quando aplicável.</td><td>Paralelismo</td><td>Reduz tempo de espera provocado pela sequência entre áreas.</td></tr>
+    <tr><td>5</td><td>Regras automáticas</td><td>Casos padrão são avaliados conforme regras previamente definidas e validadas.</td><td>Automação</td><td>Evita aprovação manual indiscriminada.</td></tr>
+    <tr><td>6</td><td>Gateway de decisão</td><td>Verifica se o caso atende às regras padrão ou se existe uma exceção.</td><td>Separação padrão × exceção</td><td>Controle proporcional ao risco.</td></tr>
+    <tr><td>7</td><td>Especialista</td><td>Recebe apenas os casos classificados como exceção e realiza análise específica.</td><td>Fila de exceções</td><td>Concentra esforço humano onde a decisão especializada é necessária.</td></tr>
+    <tr><td>8</td><td>Sistemas</td><td>Integram as informações aprovadas com ERP e identidade.</td><td>Integração</td><td>Evita redigitação e fragmentação entre sistemas.</td></tr>
+    <tr><td>9</td><td>Sistema / empresa</td><td>Registra a conclusão e comunica o resultado ao fornecedor.</td><td>Encerramento controlado</td><td>Resultado explícito, rastreável e mensurável.</td></tr>
+   </tbody>
+  </table>
+ </div>
+
+ <div class="card">
+  <h2>Regras, exceções, dados e controles</h2>
+  <div class="grid">
+   <div><h3>Regras</h3><p>Regras estáveis devem ser documentadas e validadas antes da automação. Os critérios precisam deixar claro quando um caso pode seguir automaticamente e quando necessita análise especializada.</p></div>
+   <div><h3>Exceções</h3><p>Casos fora do padrão seguem para uma fila própria. O objetivo não é eliminar controle, mas aplicar controle proporcional ao risco.</p></div>
+   <div><h3>Dados</h3><p>Os dados devem ser capturados uma vez e reutilizados. O TO-BE elimina a necessidade de digitar repetidamente as mesmas informações em diferentes sistemas.</p></div>
+   <div><h3>Controles</h3><p>O processo deve manter indicadores, responsáveis e critérios de revisão para acompanhar o desempenho e ajustar regras quando necessário.</p></div>
+  </div>
+ </div>
+</section>
+
+<section id="analise" class="section">
+ <div class="card"><h2>Matriz de análise das atividades</h2>
+ <table><thead><tr><th>Problema/atividade</th><th>Valor</th><th>Risco</th><th>Ação no TO-BE</th></tr></thead><tbody>
+ <tr><td>Redigitar dados em três sistemas</td><td>Baixo</td><td>Médio</td><td>Eliminar por integração e reutilização de dados</td></tr>
+ <tr><td>Validação cadastral</td><td>Alto</td><td>Alto</td><td>Automatizar controles estáveis</td></tr>
+ <tr><td>Análise de exceção</td><td>Médio/Alto</td><td>Alto</td><td>Manter decisão humana especializada</td></tr>
+ <tr><td>Reenvio de documentos</td><td>Baixo</td><td>Médio</td><td>Eliminar com portal e validação na origem</td></tr>
+ <tr><td>Validações independentes em sequência</td><td>Alto</td><td>Variável</td><td>Executar em paralelo quando possível</td></tr>
+ </tbody></table></div>
+ <div class="card"><h2>AS-IS × TO-BE</h2><table><thead><tr><th>Aspecto</th><th>AS-IS</th><th>TO-BE</th></tr></thead><tbody>
+ <tr><td>Entrada</td><td>E-mail e documentos reenviados</td><td>Portal único</td></tr>
+ <tr><td>Dados</td><td>Redigitação em 3 sistemas</td><td>Dados reutilizados e integrados</td></tr>
+ <tr><td>Validações</td><td>Sequenciais</td><td>Paralelas</td></tr>
+ <tr><td>Regras</td><td>Exceções pouco claras</td><td>Regras automáticas + fila de exceção</td></tr>
+ <tr><td>Sistemas</td><td>Fragmentados</td><td>Integração com ERP e identidade</td></tr>
+ </tbody></table></div>
+</section>
+
+<section id="indicadores" class="section">
+ <div class="card"><h2>Três indicadores do processo</h2><div class="grid">
+  <div class="kpi"><h3>1. Lead Time</h3><b>25 dias</b><p>Baseline atual. Medir da solicitação até a conclusão do onboarding.</p></div>
+  <div class="kpi"><h3>2. Taxa de retrabalho</h3><b>%</b><p>(Casos que retornam por documento/dado ÷ total de casos) × 100.</p></div>
+  <div class="kpi"><h3>3. Automação</h3><b>%</b><p>(Casos padrão concluídos sem intervenção manual ÷ total de casos) × 100.</p></div>
+ </div></div>
+ <div class="card"><h3>Registro de resultados</h3><p>Preencha quando houver medição real. O material fornece baseline de 25 dias e trabalho efetivo inferior a 4 horas, mas não define metas numéricas para o TO-BE.</p>
+ <div class="grid"><label>Lead time futuro<input placeholder="Ex.: resultado medido"></label><label>Retrabalho<input placeholder="% medido"></label><label>Automação<input placeholder="% medido"></label></div></div>
+</section>
+
+<section id="justificativas" class="section">
+ <div class="card"><h2>Justificativas das mudanças</h2>
+ <table><thead><tr><th>Mudança</th><th>Justificativa arquitetural</th></tr></thead><tbody>
+ <tr><td>Portal único</td><td>Centraliza a entrada, reduz reenvio e permite validar dados na origem.</td></tr>
+ <tr><td>Reutilização de dados</td><td>Elimina redigitação e reduz inconsistência entre sistemas.</td></tr>
+ <tr><td>Validações paralelas</td><td>Reduz esperas entre atividades que não dependem necessariamente umas das outras.</td></tr>
+ <tr><td>Regras automáticas</td><td>Automatiza casos padrão com regras estáveis, preservando controle.</td></tr>
+ <tr><td>Fila de exceções</td><td>Direciona análise humana para casos que realmente exigem decisão especializada.</td></tr>
+ <tr><td>Integração ERP/identidade</td><td>Evita fragmentação e conecta o processo aos sistemas corporativos.</td></tr>
+ </tbody></table></div>
+ <div class="card"><h2>Premissas e critérios</h2><p>As regras de validação precisam ser formalizadas e validadas antes da automação. Casos de maior risco ou fora do padrão devem seguir para exceção. O processo futuro deve possuir owner, indicadores e revisão contínua.</p></div>
+ <div class="actions no-print"><button class="btn primary" onclick="window.print()">Gerar / Salvar relatório em PDF</button><button class="btn" onclick="location.reload()">Reiniciar visualização</button></div>
+</section>
+
+<section id="estoque" class="section">
+ <div class="card"><h2>Gestão de Estoque</h2><p class="muted">Cadastro de produtos, saldo atual, estoque mínimo e movimentações de entrada/saída.</p>
+  <div class="module-form">
+   <label>Código<input id="estCodigo" placeholder="P001"></label>
+   <label>Produto<input id="estProduto" placeholder="Nome do produto"></label>
+   <label>Categoria<input id="estCategoria" placeholder="Categoria"></label>
+   <label>Quantidade<input id="estQtd" type="number" min="0" value="0"></label>
+   <label>Estoque mínimo<input id="estMin" type="number" min="0" value="0"></label>
+   <label>Preço de venda<input id="estPreco" type="number" min="0" step="0.01" value="0"></label>
+  </div>
+  <div class="actions no-print"><button class="btn primary" onclick="salvarProduto()">Cadastrar / Atualizar produto</button></div>
+ </div>
+ <div class="card"><h3>Produtos em estoque</h3><div class="summary"><div>Itens cadastrados<b id="kpiItens">0</b></div><div>Unidades em estoque<b id="kpiUnidades">0</b></div><div>Itens abaixo do mínimo<b id="kpiBaixo">0</b></div></div>
+ <div style="overflow:auto"><table><thead><tr><th>Código</th><th>Produto</th><th>Categoria</th><th>Qtd.</th><th>Mínimo</th><th>Preço</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tbEstoque"></tbody></table></div></div>
+</section>
+
+<section id="vendas" class="section">
+ <div class="card"><h2>Venda de Produtos</h2><p class="muted">Registre uma venda. A quantidade vendida é baixada automaticamente do estoque e, quando a venda não for paga à vista, gera um título em Contas a Receber.</p>
+  <div class="module-form">
+   <label>Data<input id="vData" type="date"></label>
+   <label>Cliente<input id="vCliente" placeholder="Nome do cliente"></label>
+   <label>Produto<select id="vProduto"></select></label>
+   <label>Quantidade<input id="vQtd" type="number" min="1" value="1"></label>
+   <label>Forma de pagamento<select id="vForma"><option>À vista</option><option>Pix</option><option>Cartão</option><option>A prazo</option></select></label>
+   <label>Vencimento<input id="vVenc" type="date"></label>
+  </div>
+  <div class="actions no-print"><button class="btn primary" onclick="registrarVenda()">Registrar venda</button></div>
+ </div>
+ <div class="card"><h3>Vendas registradas</h3><div class="summary"><div>Quantidade de vendas<b id="kpiVendas">0</b></div><div>Faturamento registrado<b id="kpiFat">R$ 0,00</b></div></div>
+ <div style="overflow:auto"><table><thead><tr><th>Data</th><th>Cliente</th><th>Produto</th><th>Qtd.</th><th>Unitário</th><th>Total</th><th>Pagamento</th></tr></thead><tbody id="tbVendas"></tbody></table></div></div>
+</section>
+
+<section id="pagar" class="section">
+ <div class="card"><h2>Contas a Pagar</h2><p class="muted">Controle de despesas, fornecedores, vencimentos e situação de pagamento.</p>
+  <div class="module-form">
+   <label>Descrição<input id="pDesc" placeholder="Ex.: compra de mercadoria"></label>
+   <label>Fornecedor<input id="pForn" placeholder="Fornecedor"></label>
+   <label>Valor<input id="pValor" type="number" min="0" step="0.01"></label>
+   <label>Vencimento<input id="pVenc" type="date"></label>
+  </div>
+  <div class="actions no-print"><button class="btn primary" onclick="adicionarPagar()">Adicionar conta</button></div>
+ </div>
+ <div class="card"><div class="summary"><div>Total em aberto<b id="kpiPagar">R$ 0,00</b></div><div>Contas vencidas<b id="kpiPagarVenc">0</b></div></div>
+ <div style="overflow:auto"><table><thead><tr><th>Descrição</th><th>Fornecedor</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tbPagar"></tbody></table></div></div>
+</section>
+
+<section id="receber" class="section">
+ <div class="card"><h2>Contas a Receber</h2><p class="muted">Controle dos valores a receber de clientes. Vendas a prazo podem gerar títulos automaticamente.</p>
+  <div class="module-form">
+   <label>Descrição<input id="rDesc" placeholder="Ex.: venda / parcela"></label>
+   <label>Cliente<input id="rCliente" placeholder="Cliente"></label>
+   <label>Valor<input id="rValor" type="number" min="0" step="0.01"></label>
+   <label>Vencimento<input id="rVenc" type="date"></label>
+  </div>
+  <div class="actions no-print"><button class="btn primary" onclick="adicionarReceber()">Adicionar recebível</button></div>
+ </div>
+ <div class="card"><div class="summary"><div>Total a receber<b id="kpiReceber">R$ 0,00</b></div><div>Títulos vencidos<b id="kpiReceberVenc">0</b></div></div>
+ <div style="overflow:auto"><table><thead><tr><th>Descrição</th><th>Cliente</th><th>Valor</th><th>Vencimento</th><th>Status</th><th>Ações</th></tr></thead><tbody id="tbReceber"></tbody></table></div></div>
+</section>
+
+</main>
+</div>
+</div>
+<script>
+const sidebar=document.getElementById('sidebar');
+const sidebarToggle=document.getElementById('sidebarToggle');
+const SIDEBAR_KEY='gestao_sidebar_collapsed';
+
+function setSidebar(collapsed){
+ document.body.classList.toggle('sidebar-collapsed',collapsed);
+ sidebar.classList.toggle('collapsed',collapsed);
+ sidebarToggle.textContent=collapsed?'☰':'‹';
+ sidebarToggle.setAttribute('aria-label',collapsed?'Expandir menu':'Recolher menu');
+ sidebarToggle.title=collapsed?'Expandir menu':'Recolher menu';
+ localStorage.setItem(SIDEBAR_KEY,collapsed?'1':'0');
+ requestAnimationFrame(()=>{window.dispatchEvent(new Event('resize')); window.scrollTo({left:0,top:window.scrollY});});
+}
+setSidebar(localStorage.getItem(SIDEBAR_KEY)==='1');
+sidebarToggle.addEventListener('click',()=>setSidebar(!document.body.classList.contains('sidebar-collapsed')));
+
+const buttons=[...document.querySelectorAll('.side-link')];
+const sections=[...document.querySelectorAll('.section')];
+function goSection(id){
+ document.documentElement.style.setProperty('--layout-tick', Date.now());
+ buttons.forEach(x=>x.classList.toggle('active',x.dataset.id===id));
+ sections.forEach(s=>s.classList.toggle('active',s.id===id));
+ window.scrollTo({top:0,left:0,behavior:'smooth'});
+}
+buttons.forEach(b=>b.onclick=()=>goSection(b.dataset.id));
+
+const DBKEY='arquitetura_empresa_modulos_v1';
+let db=JSON.parse(localStorage.getItem(DBKEY)||'{"estoque":[],"vendas":[],"pagar":[],"receber":[]}');
+const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const today=()=>new Date().toISOString().slice(0,10);
+const save=()=>{localStorage.setItem(DBKEY,JSON.stringify(db));renderAll()};
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+document.getElementById('vData').value=today();
+
+function salvarProduto(){
+ const codigo=estCodigo.value.trim(), produto=estProduto.value.trim();
+ if(!codigo||!produto){alert('Informe código e produto.');return}
+ const obj={codigo,produto,categoria:estCategoria.value.trim(),qtd:+estQtd.value||0,min:+estMin.value||0,preco:+estPreco.value||0};
+ const i=db.estoque.findIndex(x=>x.codigo.toLowerCase()===codigo.toLowerCase());
+ if(i>=0) db.estoque[i]=obj; else db.estoque.push(obj);
+ ['estCodigo','estProduto','estCategoria'].forEach(id=>document.getElementById(id).value='');
+ estQtd.value=estMin.value=estPreco.value=0; save();
+}
+function ajustarEstoque(i,delta){db.estoque[i].qtd=Math.max(0,db.estoque[i].qtd+delta);save()}
+function excluirProduto(i){if(confirm('Excluir este produto?')){db.estoque.splice(i,1);save()}}
+
+function registrarVenda(){
+ const i=+vProduto.value, q=+vQtd.value||0, cliente=vCliente.value.trim();
+ if(!db.estoque[i]||q<1||!cliente){alert('Informe cliente, produto e quantidade.');return}
+ if(db.estoque[i].qtd<q){alert('Estoque insuficiente.');return}
+ const p=db.estoque[i], total=p.preco*q, venda={data:vData.value||today(),cliente,produto:p.produto,qtd:q,unit:p.preco,total,forma:vForma.value};
+ db.vendas.push(venda); p.qtd-=q;
+ if(vForma.value==='A prazo'){
+   if(!vVenc.value){alert('Informe o vencimento da venda a prazo.'); db.vendas.pop(); p.qtd+=q; return}
+   db.receber.push({desc:'Venda de '+p.produto,cliente,valor:total,venc:vVenc.value,pago:false});
+ }
+ vCliente.value='';vQtd.value=1;save();
+}
+function adicionarPagar(){
+ if(!pDesc.value.trim()||!(+pValor.value)){alert('Informe descrição e valor.');return}
+ db.pagar.push({desc:pDesc.value.trim(),forn:pForn.value.trim(),valor:+pValor.value,venc:pVenc.value,pago:false});
+ pDesc.value=pForn.value=pValor.value=pVenc.value='';save();
+}
+function adicionarReceber(){
+ if(!rDesc.value.trim()||!(+rValor.value)){alert('Informe descrição e valor.');return}
+ db.receber.push({desc:rDesc.value.trim(),cliente:rCliente.value.trim(),valor:+rValor.value,venc:rVenc.value,pago:false});
+ rDesc.value=rCliente.value=rValor.value=rVenc.value='';save();
+}
+function togglePagar(i){db.pagar[i].pago=!db.pagar[i].pago;save()}
+function toggleReceber(i){db.receber[i].pago=!db.receber[i].pago;save()}
+function delPagar(i){db.pagar.splice(i,1);save()} function delReceber(i){db.receber.splice(i,1);save()}
+
+function renderAll(){
+ tbEstoque.innerHTML=db.estoque.map((x,i)=>`<tr><td>${esc(x.codigo)}</td><td>${esc(x.produto)}</td><td>${esc(x.categoria)}</td><td>${x.qtd}</td><td>${x.min}</td><td>${money(x.preco)}</td><td class="status ${x.qtd<=x.min?'bad':'ok'}">${x.qtd<=x.min?'REPOR':'OK'}</td><td><button class="smallbtn" onclick="ajustarEstoque(${i},1)">+1</button> <button class="smallbtn" onclick="ajustarEstoque(${i},-1)">-1</button> <button class="smallbtn danger" onclick="excluirProduto(${i})">Excluir</button></td></tr>`).join('');
+ kpiItens.textContent=db.estoque.length;kpiUnidades.textContent=db.estoque.reduce((a,x)=>a+x.qtd,0);kpiBaixo.textContent=db.estoque.filter(x=>x.qtd<=x.min).length;
+ vProduto.innerHTML=db.estoque.map((x,i)=>`<option value="${i}">${esc(x.produto)} — ${x.qtd} un. — ${money(x.preco)}</option>`).join('')||'<option value="">Cadastre produtos no estoque</option>';
+ tbVendas.innerHTML=db.vendas.slice().reverse().map(x=>`<tr><td>${esc(x.data)}</td><td>${esc(x.cliente)}</td><td>${esc(x.produto)}</td><td>${x.qtd}</td><td>${money(x.unit)}</td><td>${money(x.total)}</td><td>${esc(x.forma)}</td></tr>`).join('');
+ kpiVendas.textContent=db.vendas.length;kpiFat.textContent=money(db.vendas.reduce((a,x)=>a+x.total,0));
+ const vencido=x=>!x.pago&&x.venc&&x.venc<today();
+ tbPagar.innerHTML=db.pagar.map((x,i)=>`<tr><td>${esc(x.desc)}</td><td>${esc(x.forn)}</td><td>${money(x.valor)}</td><td>${esc(x.venc||'-')}</td><td class="status ${x.pago?'ok':vencido(x)?'bad':'warn'}">${x.pago?'PAGO':vencido(x)?'VENCIDO':'ABERTO'}</td><td><button class="smallbtn" onclick="togglePagar(${i})">${x.pago?'Reabrir':'Pagar'}</button> <button class="smallbtn danger" onclick="delPagar(${i})">Excluir</button></td></tr>`).join('');
+ kpiPagar.textContent=money(db.pagar.filter(x=>!x.pago).reduce((a,x)=>a+x.valor,0));kpiPagarVenc.textContent=db.pagar.filter(vencido).length;
+ tbReceber.innerHTML=db.receber.map((x,i)=>`<tr><td>${esc(x.desc)}</td><td>${esc(x.cliente)}</td><td>${money(x.valor)}</td><td>${esc(x.venc||'-')}</td><td class="status ${x.pago?'ok':vencido(x)?'bad':'warn'}">${x.pago?'RECEBIDO':vencido(x)?'VENCIDO':'ABERTO'}</td><td><button class="smallbtn" onclick="toggleReceber(${i})">${x.pago?'Reabrir':'Receber'}</button> <button class="smallbtn danger" onclick="delReceber(${i})">Excluir</button></td></tr>`).join('');
+ kpiReceber.textContent=money(db.receber.filter(x=>!x.pago).reduce((a,x)=>a+x.valor,0));kpiReceberVenc.textContent=db.receber.filter(vencido).length;
+ if(document.getElementById('dashProdutos')){
+  dashProdutos.textContent=db.estoque.length;
+  dashBaixo.textContent=db.estoque.filter(x=>x.qtd<=x.min).length;
+  dashVendas.textContent=db.vendas.length;
+  dashFat.textContent=money(db.vendas.reduce((a,x)=>a+x.total,0));
+  dashReceber.textContent=money(db.receber.filter(x=>!x.pago).reduce((a,x)=>a+x.valor,0));
+  dashPagar.textContent=money(db.pagar.filter(x=>!x.pago).reduce((a,x)=>a+x.valor,0));
+ }
+}
+renderAll();
+</script>
+</body></html>
