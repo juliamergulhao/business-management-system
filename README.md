@@ -1,196 +1,114 @@
 # Sistema de Gestão Empresarial 🏢
 
-Sistema web de **gestão empresarial e análise de processos**, desenvolvido para demonstrar a integração entre arquitetura empresarial, processos de negócio, estoque, vendas e gestão financeira.
+Sistema web para **gestão empresarial e análise de processos de negócio**, integrando modelagem de processos, estoque, vendas e controle financeiro em uma única aplicação.
 
-[![LIVE DEMO](https://img.shields.io/badge/LIVE_DEMO-ACESSAR_APLICAÇÃO-14c9b5?style=for-the-badge)](https://juliamergulhao.github.io/sistema-gestao-empresarial/)
-[![SOURCE CODE](https://img.shields.io/badge/SOURCE_CODE-GITHUB-181717?style=for-the-badge&logo=github)](https://github.com/juliamergulhao/sistema-gestao-empresarial)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Acessar%20Aplicação-00C7B7?style=for-the-badge)](https://juliamergulhao.github.io/sistema-gestao-empresarial/)
+[![GitHub](https://img.shields.io/badge/Source%20Code-GitHub-181717?style=for-the-badge&logo=github)](https://github.com/juliamergulhao/sistema-gestao-empresarial)
 
-O projeto combina a análise e modelagem de processos **AS-IS e TO-BE** com módulos funcionais de **Estoque, Vendas, Contas a Pagar e Contas a Receber**, permitindo visualizar como processos, dados e sistemas podem trabalhar de forma integrada.
+O projeto combina conceitos de **Arquitetura Empresarial e processos de negócio** com módulos funcionais de **Estoque, Vendas, Contas a Pagar e Contas a Receber**.
 
-A aplicação também demonstra a integração entre diferentes áreas do negócio, como a atualização automática do estoque após uma venda e a geração de contas a receber em operações realizadas a prazo.
+A aplicação também apresenta a análise do processo de onboarding de fornecedores, comparando o cenário atual (**AS-IS**) com uma proposta de melhoria (**TO-BE**).
 
 ---
 
 ## 🎯 Objetivo
 
-## 🎯 Objetivo do projeto
+Demonstrar como **processos, dados, áreas de negócio e sistemas** podem funcionar de forma integrada dentro de uma organização.
 
-O objetivo é representar um cenário empresarial no qual processos de negócio podem ser analisados, redesenhados e apoiados por sistemas integrados.
+A solução permite trabalhar com:
 
-O projeto aborda duas perspectivas:
-
-- **Arquitetura e processos:** análise do cenário atual, identificação de problemas e proposta de melhoria.
-- **Gestão operacional:** demonstração da integração entre estoque, vendas e financeiro.
-
----
-
-## 🏗️ Arquitetura Empresarial
-
-A aplicação apresenta a análise de um processo de **onboarding de fornecedores**, permitindo comparar o funcionamento atual com uma proposta de processo futuro.
-
-### AS-IS
-
-Representa o processo atual.
-
-O cenário analisado apresenta problemas como:
-
-- Esperas entre áreas;
-- Handoffs excessivos;
-- Reenvio de documentos;
-- Validações repetidas;
-- Redigitação de informações;
-- Dados distribuídos entre diferentes sistemas;
-- Falta de regras claras para tratamento de exceções.
-
-O processo possui um lead time aproximado de **25 dias**, embora o trabalho efetivo seja inferior a **4 horas**.
-
-### TO-BE
-
-Representa a proposta de processo futuro.
-
-Entre as melhorias apresentadas estão:
-
-- Portal único para entrada de informações;
-- Reutilização de dados;
-- Validações realizadas em paralelo;
-- Aplicação de regras automáticas;
-- Separação entre casos padrão e exceções;
-- Fila específica para tratamento de exceções;
-- Integração com ERP e gestão de identidade.
-
-A proposta busca reduzir esperas, retrabalho e transferências desnecessárias entre áreas.
+- Modelagem do processo atual (AS-IS)
+- Modelagem do processo futuro (TO-BE)
+- Identificação de gargalos e retrabalho
+- Análise de handoffs entre áreas
+- Indicadores de processo
+- Gestão de estoque
+- Registro de vendas
+- Controle de contas a pagar
+- Controle de contas a receber
+- Integração entre operações comerciais e financeiras
 
 ---
 
 ## ⚙️ Funcionalidades
 
-### 📦 Gestão de Estoque
+### 📊 Dashboard
 
-Permite:
+- Visão consolidada da operação
+- Produtos cadastrados
+- Produtos com estoque baixo
+- Quantidade de vendas
+- Faturamento
+- Valores a receber
+- Valores a pagar
 
-- Cadastrar produtos;
-- Definir categoria;
-- Controlar quantidade disponível;
-- Definir estoque mínimo;
-- Registrar preço de venda;
-- Identificar produtos com estoque baixo.
+### 🏗️ Arquitetura e Processos
+
+- Visualização do fluxo AS-IS
+- Visualização do fluxo TO-BE
+- Conceitos de processos de negócio
+- Descrição dos procedimentos
+- Identificação de gargalos
+- Identificação de retrabalho
+- Análise de handoffs
+- Tratamento de exceções
+- Indicadores de desempenho
+- Justificativas para as melhorias propostas
+
+### 📦 Estoque
+
+- Cadastro de produtos
+- Controle de quantidade
+- Definição de estoque mínimo
+- Cadastro de categoria
+- Definição de preço de venda
+- Identificação de produtos com estoque baixo
+- Atualização automática após uma venda
 
 ### 🛒 Vendas
 
-Permite registrar vendas informando dados como:
-
-- Cliente;
-- Produto;
-- Quantidade;
-- Data;
-- Forma de pagamento.
-
-Ao registrar uma venda, a quantidade vendida é automaticamente descontada do estoque.
+- Registro de vendas
+- Seleção de produtos
+- Identificação do cliente
+- Controle de quantidade
+- Registro da forma de pagamento
+- Cálculo do valor da venda
+- Baixa automática no estoque
 
 ### 💸 Contas a Pagar
 
-Permite controlar obrigações financeiras da empresa, incluindo:
-
-- Descrição;
-- Fornecedor;
-- Valor;
-- Data de vencimento;
-- Situação do pagamento.
+- Cadastro de despesas
+- Identificação do fornecedor
+- Controle de valores
+- Controle de vencimentos
+- Acompanhamento da situação do pagamento
 
 ### 💰 Contas a Receber
 
-Permite acompanhar valores que a empresa possui para receber.
-
-Vendas realizadas a prazo podem gerar automaticamente um registro em **Contas a Receber**, demonstrando a integração entre o processo comercial e financeiro.
-
----
-
-## 🔄 Integração entre os módulos
-
-Uma das principais características do projeto é a comunicação entre diferentes áreas do sistema.
-
-Exemplo:
-
-Venda registrada
-        ↓
-Atualização do estoque
-        ↓
-Venda a prazo
-        ↓
-Geração de conta a receber
-
-Essa integração demonstra como uma única operação pode produzir efeitos em diferentes processos empresariais.
+- Cadastro de recebíveis
+- Identificação do cliente
+- Controle de valores
+- Controle de vencimentos
+- Integração com vendas realizadas a prazo
 
 ---
 
-## 📊 Indicadores
+## 🔄 Integração dos Processos
 
-O sistema também trabalha com indicadores para acompanhamento dos processos e operações.
-
-Entre eles:
-
-- Lead time do processo;
-- Taxa de retrabalho;
-- Taxa de automação;
-- Produtos cadastrados;
-- Produtos com estoque baixo;
-- Quantidade de vendas;
-- Faturamento;
-- Total a pagar;
-- Total a receber.
-
----
-
-## 🧩 Conceitos abordados
-
-O projeto aplica conceitos relacionados a:
-
-- Arquitetura Empresarial;
-- Processos de negócio;
-- BPMN;
-- AS-IS;
-- TO-BE;
-- Eventos;
-- Tarefas;
-- Gateways;
-- Pools e Lanes;
-- Handoffs;
-- Gargalos;
-- Retrabalho;
-- Automação;
-- Tratamento de exceções;
-- Indicadores de desempenho;
-- Integração entre processos e sistemas.
-
----
-
-## 💻 Tecnologias utilizadas
-
-- HTML5
-- CSS3
-- JavaScript
-- LocalStorage
-- Git
-- GitHub
-- GitHub Pages
-
-O projeto foi desenvolvido em um único arquivo `index.html`, contendo estrutura, estilização e lógica da aplicação.
-
----
-
-## 💾 Persistência dos dados
-
-Os registros da aplicação são armazenados no **LocalStorage do navegador**.
-
-Isso permite manter os dados cadastrados ao atualizar ou fechar a página no mesmo navegador.
-
-> O projeto não utiliza banco de dados ou backend. Por isso, os dados permanecem armazenados localmente no navegador utilizado.
-
----
-
-## 📁 Estrutura do projeto
+A aplicação demonstra como uma operação pode gerar efeitos em diferentes áreas do negócio.
 
 ```text
-sistema-gestao-empresarial/
-│
-└── index.html
+Venda registrada
+       │
+       ▼
+Atualização do estoque
+       │
+       ▼
+Forma de pagamento
+       │
+       ├── À vista ──► Venda concluída
+       │
+       └── A prazo
+              │
+              ▼
+       Conta a Receber
