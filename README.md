@@ -1,16 +1,17 @@
-# 🏢 Sistema de Gestão Empresarial
+# Sistema de Gestão Empresarial 🏢
 
-Sistema web desenvolvido para demonstrar, de forma prática, a aplicação de conceitos de **Arquitetura Empresarial, processos de negócio e integração entre áreas operacionais e financeiras**.
+Sistema web de **gestão empresarial e análise de processos**, desenvolvido para demonstrar a integração entre arquitetura empresarial, processos de negócio, estoque, vendas e gestão financeira.
+
+[![LIVE DEMO](https://img.shields.io/badge/LIVE_DEMO-ACESSAR_APLICAÇÃO-14c9b5?style=for-the-badge)](https://juliamergulhao.github.io/sistema-gestao-empresarial/)
+[![SOURCE CODE](https://img.shields.io/badge/SOURCE_CODE-GITHUB-181717?style=for-the-badge&logo=github)](https://github.com/juliamergulhao/sistema-gestao-empresarial)
 
 O projeto combina a análise e modelagem de processos **AS-IS e TO-BE** com módulos funcionais de **Estoque, Vendas, Contas a Pagar e Contas a Receber**, permitindo visualizar como processos, dados e sistemas podem trabalhar de forma integrada.
 
-## 🌐 Demonstração
-
-Acesse o sistema:
-
-https://juliamergulhao.github.io/sistema-gestao-empresarial/
+A aplicação também demonstra a integração entre diferentes áreas do negócio, como a atualização automática do estoque após uma venda e a geração de contas a receber em operações realizadas a prazo.
 
 ---
+
+## 🎯 Objetivo
 
 ## 🎯 Objetivo do projeto
 
