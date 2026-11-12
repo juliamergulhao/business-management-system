@@ -287,8 +287,8 @@ O **LocalStorage** do navegador é utilizado para armazenar os dados cadastrados
               │             │             │
               └─────────────┘             │
                  Baixa                    │
-               automática                │
-                                         │
+               automática                 │
+                                          │
                           Venda a prazo ──┘
 ```
 
